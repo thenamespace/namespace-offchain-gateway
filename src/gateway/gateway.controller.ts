@@ -10,7 +10,7 @@ class GatewayRequest {
   data: Hash;
 }
 
-@Controller('/api/v1/gateway')
+@Controller('/resolve')
 export class GatewayController {
   constructor(private readonly service: GatewayService) {}
 
