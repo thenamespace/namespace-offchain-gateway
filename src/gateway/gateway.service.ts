@@ -136,7 +136,7 @@ export class GatewayService {
       throw new BadRequestException('Namehash missmatch');
     }
 
-    if (supportedFunctions.includes(functionName)) {
+    if (!supportedFunctions.includes(functionName)) {
       throw new BadRequestException('Unsupported opperation ' + functionName);
     }
 

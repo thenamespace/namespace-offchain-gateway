@@ -57,6 +57,7 @@ export class GatewayDatabaseResolver implements GatewayResolver {
     if (!subname && !subname.id) {
       throw new NotFoundException(`Subname not found`);
     }
+    console.log("Found subname for name " + ensName, JSON.stringify(subname));
     return subname;
   };
 }
