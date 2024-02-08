@@ -17,19 +17,19 @@ class Subname {
 
   @Prop({
     required: true,
-    type: Map,
-    default: [],
+    type: Object,
+    default: {},
     _id: false,
   })
-  addresses: Map<string, string>;
+  addresses: Record<string, string>;
 
   @Prop({
     required: false,
-    type: Map,
-    default: [],
+    type: Object,
+    default: {},
     _id: false,
   })
-  textRecords: Map<string, string>;
+  textRecords: Record<string, string>;
 
   @Prop({ required: false, type: String })
   contentHash: string;
