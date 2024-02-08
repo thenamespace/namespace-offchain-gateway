@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   Address,
   Hash,
@@ -9,21 +9,34 @@ import {
   encodeFunctionResult,
   encodePacked,
   keccak256,
+  namehash,
   parseAbiParameters,
 } from 'viem';
 import { decodeDnsName } from './gateway.utils';
-import RESOLVER_ABI from './resolver.json';
+import RESOLVER_ABI from './resolver_abi.json';
 import { privateKeyToAccount } from 'viem/accounts';
-import { ConfigService } from '@nestjs/config';
 import { ethers } from 'ethers';
+import { GatewayResolver } from './resolver/gatway.resolver';
+import { AppProperties } from 'src/configuration/app-properties';
+import { GatewayDatabaseResolver } from './resolver/database.resolver';
+
+const addr = 'addr';
+const text = 'text';
+const contentHash = 'contentHash';
+const supportedFunctions = [addr, text, contentHash];
+const defaultCoinType = '60';
 
 @Injectable()
 export class GatewayService {
-  viemSigner: PrivateKeyAccount;
-  ethersSigner: ethers.SigningKey;
+  private viemSigner: PrivateKeyAccount;
+  private ethersSigner: ethers.SigningKey;
 
-  constructor(private readonly config: ConfigService) {
-    const privateKey = this.config.getOrThrow('SIGNER_WALLET') as string;
+  constructor(
+    private readonly appProperties: AppProperties,
+    // doesn't work with GatewayResolver interface, investigate why
+    private readonly resolver: GatewayDatabaseResolver,
+  ) {
+    const privateKey = this.appProperties.signerWallet;
     const _pk = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`;
     this.viemSigner = privateKeyToAccount(_pk as Hash);
 
@@ -40,7 +53,6 @@ export class GatewayService {
     // 8 - 'resolve' function signature
     const data = callData.substring(10);
 
-    console.log(`Signer address ${this.viemSigner.address}`);
     const parsedCallData = decodeAbiParameters(
       parseAbiParameters('bytes name, bytes callData'),
       `0x${data}`,
@@ -62,15 +74,16 @@ export class GatewayService {
       `Request for resolving name ${decodedName} with function ${decodedFunction.functionName}, with params ${decodedFunction.args}`,
     );
 
-    const { resultAddress, ttl } = this.resolveResult(
+    const { value, ttl } = await this.resolveResult(
       decodedName,
       decodedFunction.functionName,
+      decodedFunction.args,
     );
 
     const result = encodeFunctionResult({
       abi: RESOLVER_ABI,
       functionName: decodedFunction.functionName,
-      result: [resultAddress],
+      result: [value],
     });
 
     const digest = keccak256(
@@ -94,8 +107,12 @@ export class GatewayService {
     //   message: digest,
     // });
 
-    const sig = this.ethersSigner.sign(digest)
-    const ethersSig = ethers.concat([sig.r, sig.s, new Uint8Array([sig.v])]) as any;
+    const sig = this.ethersSigner.sign(digest);
+    const ethersSig = ethers.concat([
+      sig.r,
+      sig.s,
+      new Uint8Array([sig.v]),
+    ]) as any;
 
     const finalResult = encodeAbiParameters(
       parseAbiParameters('bytes response, uint64 ttl, bytes signature'),
@@ -107,10 +124,33 @@ export class GatewayService {
     };
   }
 
-  private resolveResult = (ensName: string, functionName: string) => {
-    return {
-      resultAddress: '0x3E1e131E7e613D260F809E6BBE6Cbf7765EDC77f',
-      ttl: Date.now(),
-    };
+  private resolveResult = async (
+    ensName: string,
+    functionName: string,
+    args: readonly any[],
+  ) => {
+    const nameNode = namehash(ensName);
+    const funcNode = args[0];
+
+    if (nameNode !== funcNode) {
+      throw new BadRequestException('Namehash missmatch');
+    }
+
+    if (supportedFunctions.includes(functionName)) {
+      throw new BadRequestException('Unsupported opperation ' + functionName);
+    }
+
+    switch (functionName) {
+      case addr:
+        const coinType = args.length > 1 ? args.length[1] : defaultCoinType;
+        return this.resolver.getAddress(ensName, coinType);
+      case text:
+        if (args.length < 2) {
+          throw new BadRequestException('Text key not found');
+        }
+        return this.resolver.getText(ensName, args[1]);
+      default:
+        return this.resolver.getContentHash(ensName);
+    }
   };
 }
