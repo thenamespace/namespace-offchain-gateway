@@ -15,9 +15,10 @@ import {
 import { decodeDnsName } from './gateway.utils';
 import RESOLVER_ABI from './resolver_abi.json';
 import { privateKeyToAccount } from 'viem/accounts';
-import { ConfigService } from '@nestjs/config';
 import { ethers } from 'ethers';
 import { GatewayResolver } from './resolver/gatway.resolver';
+import { AppProperties } from 'src/configuration/app-properties';
+import { GatewayDatabaseResolver } from './resolver/database.resolver';
 
 const addr = 'addr';
 const text = 'text';
@@ -27,14 +28,15 @@ const defaultCoinType = '60';
 
 @Injectable()
 export class GatewayService {
-  viemSigner: PrivateKeyAccount;
-  ethersSigner: ethers.SigningKey;
+  private viemSigner: PrivateKeyAccount;
+  private ethersSigner: ethers.SigningKey;
 
   constructor(
-    private readonly config: ConfigService,
-    private readonly resolver: GatewayResolver,
+    private readonly appProperties: AppProperties,
+    // doesn't work with GatewayResolver interface, investigate why
+    private readonly resolver: GatewayDatabaseResolver,
   ) {
-    const privateKey = this.config.getOrThrow('SIGNER_WALLET') as string;
+    const privateKey = this.appProperties.signerWallet;
     const _pk = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`;
     this.viemSigner = privateKeyToAccount(_pk as Hash);
 

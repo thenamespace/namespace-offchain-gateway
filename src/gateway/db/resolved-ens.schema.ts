@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 
-@Schema({ timestamps: true, collection: "subnames" })
+@Schema({ timestamps: true, collection: "subnames", autoCreate: false,  })
 class Subname {
   @Prop({ unique: true, required: true, type: String })
   fullName: string;
