@@ -79,6 +79,7 @@ export class GatewayService {
       decodedFunction.functionName,
       decodedFunction.args,
     );
+    const _ttl = Date.now() + 10000;
 
     const result = encodeFunctionResult({
       abi: RESOLVER_ABI,
@@ -86,13 +87,15 @@ export class GatewayService {
       result: [value],
     });
 
+    console.log("Resolved value " + value);
+
     const digest = keccak256(
       encodePacked(
         ['bytes', 'address', 'uint64', 'bytes32', 'bytes32'],
         [
           '0x1900',
           resolverContract,
-          BigInt(ttl),
+          BigInt(_ttl),
           keccak256(callData),
           keccak256(result),
         ],
@@ -116,7 +119,7 @@ export class GatewayService {
 
     const finalResult = encodeAbiParameters(
       parseAbiParameters('bytes response, uint64 ttl, bytes signature'),
-      [result, BigInt(ttl), ethersSig],
+      [result, BigInt(_ttl), ethersSig],
     );
 
     return {
