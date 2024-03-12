@@ -1,15 +1,10 @@
-name: Deploy offchain subnames api
+name: Deploy production gateway
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: restart
-        default: v1.0.0
-        required: true
 
 jobs:
   restart-offchain-subnames-api:
-    name: Restart offchain subnames api
+    name: Deploy production gateway
     runs-on: ubuntu-latest
 
     steps:
@@ -19,6 +14,7 @@ jobs:
           host: ${{ secrets.SERVER_URL_PROD }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_KEY }}
+          passphrase: ${{ secrets.PASSPHASE }}
           script: |
             docker stop offchain-gateway
             docker rm offchain-gateway

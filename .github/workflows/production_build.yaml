@@ -1,10 +1,10 @@
-name: Build Staging Backend
+name: Build develop offchain gateway
 on:
   push:
     branches: [gateway-production]
 
 jobs:
-  build-staging-backend:
+  build-production-gateway:
     name: Service deployment
     runs-on: ubuntu-latest
 

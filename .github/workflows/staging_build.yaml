@@ -1,10 +1,10 @@
-name: Build Staging Backend
+name: Build develop gateway
 on:
   push:
     branches: [develop]
 
 jobs:
-  build-staging-backend:
+  build-develop-gateway:
     name: Service deployment
     runs-on: ubuntu-latest
 
