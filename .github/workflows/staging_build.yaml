@@ -1,7 +1,7 @@
 name: Build Staging Backend
 on:
   push:
-    branches: [mainnet-gateway]
+    branches: [develop]
 
 jobs:
   build-staging-backend:
