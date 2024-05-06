@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AppProperties } from 'src/configuration/app-properties';
 import { Address, Hash } from 'viem';
+import { ArbGatewayService } from './l2/arb/arb-gateway.service';
 import { L2GatewayService } from './l2/gateway.service';
 import { OffchainGatewayService } from './offchain/gateway.service';
 
@@ -15,6 +16,7 @@ export class GatewayServiceProxy implements GatewayService {
   constructor(
     private readonly appProperties: AppProperties,
     private readonly offchainService: OffchainGatewayService,
+    private readonly arbService: ArbGatewayService,
     private readonly l2Service: L2GatewayService,
   ) {}
 
@@ -22,6 +24,9 @@ export class GatewayServiceProxy implements GatewayService {
     switch (senderContract?.toLocaleLowerCase()) {
       case this.appProperties.offchainResolver?.toLocaleLowerCase():
         return this.offchainService.handle(senderContract, callData);
+
+      case this.appProperties.arbResolver?.toLocaleLowerCase():
+        return this.arbService.handle(senderContract, callData);
 
       case this.appProperties.l2Resolver?.toLocaleLowerCase():
         return this.l2Service.handle(senderContract, callData);
