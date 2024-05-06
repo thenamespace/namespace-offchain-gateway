@@ -8,7 +8,7 @@ export interface GatewayService {
   handle(senderContract: Address, callData: Hash): Promise<{ data: Hash }>;
 }
 
-export const GATEWAY_SERVICE = 'GATEWAY_SERVICE';
+export const GATEWAY_SERVICE = 'GATEWAY_SERVICE_PROXY';
 
 @Injectable()
 export class GatewayServiceProxy implements GatewayService {
@@ -17,11 +17,13 @@ export class GatewayServiceProxy implements GatewayService {
     private readonly offchainService: OffchainGatewayService,
     private readonly l2Service: L2GatewayService,
   ) {}
+
   handle(senderContract: Hash, callData: Hash): Promise<{ data: Hash }> {
-    switch (senderContract) {
-      case this.appProperties.offchainResolver:
+    switch (senderContract?.toLocaleLowerCase()) {
+      case this.appProperties.offchainResolver?.toLocaleLowerCase():
         return this.offchainService.handle(senderContract, callData);
-      case this.appProperties.l2Resolver:
+
+      case this.appProperties.l2Resolver?.toLocaleLowerCase():
         return this.l2Service.handle(senderContract, callData);
     }
 

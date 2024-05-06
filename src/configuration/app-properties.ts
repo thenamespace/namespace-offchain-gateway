@@ -8,6 +8,9 @@ export class AppProperties {
   signerWallet: string;
   offchainResolver: Address;
   l2Resolver: Address;
+  l2OracleOutput: Address;
+  l1RpcUrl: string;
+  l2RpcUrl: string;
 
   constructor(private readonly configService: ConfigService) {
     this.mongoConnectionString = this.configService.getOrThrow(
@@ -16,5 +19,8 @@ export class AppProperties {
     this.signerWallet = this.configService.getOrThrow('SIGNER_WALLET');
     this.offchainResolver = this.configService.getOrThrow('OFFCHAIN_RESOLVER');
     this.l2Resolver = this.configService.getOrThrow('L2_RESOLVER');
+    this.l2OracleOutput = this.configService.getOrThrow('L2_ORACLE_OUTPUT');
+    this.l1RpcUrl = this.configService.getOrThrow('L1_RPC_URL');
+    this.l2RpcUrl = this.configService.getOrThrow('L2_RPC_URL');
   }
 }
