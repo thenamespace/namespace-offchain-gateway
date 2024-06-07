@@ -1,23 +1,18 @@
 import { EVMGateway } from '@ensdomains/evm-gateway';
-import { Injectable } from '@nestjs/common';
 import { JsonRpcProvider } from 'ethers';
 import { AppProperties } from 'src/configuration/app-properties';
 import { L2GatewayService } from '../gateway.service';
-import { ArbProofService, ArbProvableBlock } from './arb-proof.service';
-import { InMemoryBlockCache } from './blockcache/inmemory-blockcache';
+import { OPProofService } from '../op-proof.service';
 
-@Injectable()
-export class ArbGatewayService extends L2GatewayService {
-  evmGateway: EVMGateway<ArbProvableBlock>;
-
+export class OpProofService extends L2GatewayService {
   constructor(appProperties: AppProperties) {
     super(
       new EVMGateway(
-        new ArbProofService(
+        new OPProofService(
           new JsonRpcProvider(appProperties.l1RpcUrl),
           new JsonRpcProvider(appProperties.l2RpcUrl),
-          appProperties.l2RollupAddress,
-          new InMemoryBlockCache(),
+          appProperties.l2OracleOutput,
+          0,
         ),
       ),
     );
