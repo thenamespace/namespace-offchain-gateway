@@ -1,9 +1,6 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
-import {
-  Address,
-  Hash,
-} from 'viem';
-import { GatewayService } from './gateway.service';
+import { Controller, Get, Inject, Param, Post } from '@nestjs/common';
+import { Address, Hash } from 'viem';
+import { GATEWAY_SERVICE, GatewayService } from './gateway.service';
 
 class GatewayRequest {
   sender: Address;
@@ -12,7 +9,10 @@ class GatewayRequest {
 
 @Controller('/resolve')
 export class GatewayController {
-  constructor(private readonly service: GatewayService) {}
+  constructor(
+    @Inject(GATEWAY_SERVICE)
+    private readonly service: GatewayService,
+  ) {}
 
   @Get('/:sender/:data.json')
   public async handleGet(@Param() request: GatewayRequest) {
